@@ -8,7 +8,24 @@ Du möchtest eine **LAN Party** veranstalten und weißt nicht, wo du anfangen so
 
 Bitte beachte, dass es sich bei dieser Anleitung um _einen möglichen_ Weg handelt. Es gibt mit Sicherheit noch bessere Ansätze oder bessere Software. Wir haben diese Anleitung jedoch so gestaltet, dass mit einem Minimum an Aufwand ein bestmögliches Ergebnis erreicht werden kann, ohne viele Einschränkungen zu schaffen. Wir versuchen dabei, die wichtigsten **Basics** zu vermitteln, die man für eine erfolgreiche LAN Party verinnerlicht haben sollte.
 
-Diese Anleitung geht davon aus, dass du ein System einrichten möchtest, dass als **Server für deine LAN** dienen soll. Es ist erst einmal nicht so wichtig, ob diese Hardware schon bereit steht oder erst später beschafft werden soll. Sie muss lediglich **x86_64** -kompatibel sein. Wir nutzen im Folgenden die Software **VMware Workstation**, um virtuelle Server anzulegen und auszuführen. Es ist dir überlassen, welche Schritte du bearbeiten möchtest, welche Dienste du einrichten möchtest und wo deine **virtuellen Server** später ausgeführt werden. Im Detail erklären wir folgendes:
+## Ausgangssituation
+
+In dieser Anleitung gehen wir davon aus, dass du ein System einrichten möchtest, dass als **Server für deine LAN** dienen soll. Es ist erst einmal nicht so wichtig, ob diese Hardware schon bereit steht oder erst später beschafft werden soll. Sie muss lediglich **x86_64** -kompatibel sein. Da wir mit virtuellen Maschinen arbeiten, kannst du diese an deinem Windows-PC konfigurieren und später auf den Server übertragen.
+
+
+### Vorschlag Netzdesign - mit Internet
+
+![](images/diagram_lan_inet.svg)
+
+
+Sollte **keine** Internetverbindung möglich oder diese schlicht nicht gewünscht sein, gestaltet sich das Netzdesign etwas einfacher. Es genügt **eine einzelne** Netzwerkkarte im Server. Sind mehr verfügbar, können sie als **Failover** oder **Link-Aggregation** genutzt werden.
+
+### Vorschlag Netzdesign - nur LAN
+
+![](images/diagram_lan_lag.svg)
+
+
+Wir nutzen im Folgenden die Software **VMware Workstation**, um virtuelle Server anzulegen und auszuführen. Es ist dir überlassen, welche Schritte du bearbeiten möchtest, welche Dienste du einrichten möchtest und wo deine **virtuellen Server** später ausgeführt werden. Im Detail erklären wir folgendes:
 
  
 ## Vorgehen
@@ -29,7 +46,12 @@ Wir zeigen in diesem Tutorial, wie VMware Workstation unter Windows konfiguriert
 **5. Installation von LANPage**
 
 
-## Voraussetzungen
+Wenn alles eingerichtet ist, wird dein neues **LAN Party -Netz** in etwa so aussehen:
+
+![](images/diagram_lan_inet_vms.svg)
+
+
+## Hardware
 Diese Anleitung stellt keine allzu hohen Anforderungen an deine Hardware. Es hängt letztlich von deinem Konzept ab, wie viele virtuelle Server du benötigst und ausführen möchtest.  Wir können an dieser Stelle nur Empfehlungen aussprechen. Gehen wir beispielsweise davon aus, dass das Serversystem über folgende Ausstattung verfügt:
 
 ### Beispielhardware - alter Desktop PC
