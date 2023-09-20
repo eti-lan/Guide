@@ -330,6 +330,8 @@ Folge den Anweisungen und passe die Vorgaben gegebenenfalls an.
 
 ![](images/vmware_l2IeHuGkwu.png)
 
+### Hardwareanpassungen ###
+
 ![](images/vmware_teSejCS7j8.png)
 
 Plane etwas mehr Speicherplatz ein, wenn du mehrere Gameserver in einer VM betreiben möchtest. Die virtuelle Festplatte lässt sich aber auch nachträglich vergrößern.
@@ -338,6 +340,7 @@ Plane etwas mehr Speicherplatz ein, wenn du mehrere Gameserver in einer VM betre
 
 ![](images/vmware_TNMBCFrnNB.png)
 
+### Alles korrekt? ###
 Prüfe die Konfiguration noch einmal in der Zusammenfassung.
 
 ![](images/vmware_UqK5upCZBV.png)
@@ -350,6 +353,8 @@ Klicke auf _Edit virtual machine settings_, wenn du die VM nachträglich anpasse
 
 ![](images/vmware_ReC39JQnSG.png)
 
+### Windows-Setup ###
+
 Das Windows-Logo sollte bald erscheinen, gefolgt von der _Windows Server Installationsroutine_.
 
 ![](images/vmware_2ZCUVz7t5o.png)
@@ -359,6 +364,8 @@ Folge den Anweisungen und wähle eine passende Edition aus, die von deinen Lizen
 ![](images/vmware_VrUonVU2PE.png)
 
 ![](images/vmware_4EORrRttsd.png)
+
+### Partitionierung ###
 
 Wähle die gesamte virtuelle Festplatte zur automatisch Partitionierung.
 
@@ -372,8 +379,7 @@ Bitte warten...
 >Langweilig oder? Dann lass uns doch gleich noch eine weitere VM erstellen!  Denn das dauert hier noch ein wenig und wir haben ja gerade so viel Übung darin.
 
 
-
-## Installation Webserver ##
+## Weitere VM erstellen ##
 
 Ein _Webserver_ benötigt normalerweise nicht sehr viele Ressourcen und ist schnell eingerichtet. Mittels der _Webserver-VM_ kannst du zum Beispiel _LANPage_ betreiben und deinen Mitspielern ein Informationsportal anbieten. Du kannst diesen Schritt überspringen, wenn du keine solche VM betreiben möchtest.
 
@@ -411,7 +417,12 @@ Es genügt eine Minimalkonfiguration mit einem oder zwei CPU-Kernen.
 
 ![](images/vmware_goZWA4rI8g.png)
 
-Wähle auch hier wieder den _Bridged_-Modus für die Netzwerkkarte. Starte die VM aber zunächst noch nicht. Kehre stattdessen zurück zu deiner _Gameserver-VM_ und prüfe den Stand der Installation.
+Wähle auch hier wieder den _Bridged_-Modus für die Netzwerkkarte. Starte die VM aber zunächst noch nicht. 
+
+
+## pfSense Verwaltungsoberfläche ##
+
+Kehre stattdessen zurück zu deiner _Gameserver-VM_ und prüfe den Stand der Installation.
 
 Wähle ein Passwort, wenn du bei der Maske angekommen bist.
 
@@ -421,7 +432,9 @@ Beende den Server Manager, der sich daraufhin automatisch öffnet. Du kannst ihn
 
 ![](images/vmware_FdKcxc5Mop.png)
 
-Dir wird sicherlich schon vor einer Weile der kleine Hinweis aufgefallen sein, denn VMware Workstation am unteren Ende des VM-Fensters anzeigt. 
+### VMware Tools installieren ###
+
+Dir wird sicherlich schon vor einer Weile der kleine Hinweis aufgefallen sein, den VMware Workstation am unteren Ende des VM-Fensters anzeigt. 
 
 Es wird empfohlen, die _VMware Tools_ zu installieren, um das Gastsystem mit virtuellen Treibern zu beschleunigen. Klicke dazu auf _I finished Installing_.
 
@@ -443,7 +456,7 @@ Belasse es bei Installationstyp _Typical_.
 
 ![](images/vmware_YATNMMicSU.png)
 
-Sobald die Installation der Treiber abgeschlossen ist, öffne die Übersicht der Netzwerkverbindungen durch _Rechtsklick_ auf das Icon neben der Lautstärkeregelung oder durch _Start-> Ausführen:_
+Sobald die Installation der Treiber abgeschlossen ist, öffne die Übersicht der Netzwerkverbindungen durch _Rechtsklick_ auf das Icon neben der Lautstärkeregelung oder durch _Start_ --> _cmd_ und den Befehl:
 
 >control netconnections ncpa.cpl
 
@@ -473,7 +486,7 @@ Die Standardzugangsdaten lauten:
 
 Du solltest nun den Installationsassistenten durchlaufen, um eine Grundkonfiguration der _pfSense_ vorzunehmen. 
 
-Wähle einen _Hostnamen_ und eine _Domain_. Der _DHCP-Server_ der pfSense wird diese Informationen an die Clients verteilen und die Weboberfläche unter der Kombination aus beidem erreichbar machen, also zum Beispiel:
+Wähle einen _Hostnamen_ und eine _Domain_. Theoretisch wäre hier jede erdenkliche Kombination möglich, es empfiehlt sich jedoch, eine Fake-Domain zu verwenden. Der _DHCP-Server_ der pfSense wird diese Informationen an die Clients verteilen und die Weboberfläche unter der Kombination aus beidem erreichbar machen, also zum Beispiel:
 
 > https://firewall.mylan
 
@@ -512,41 +525,153 @@ Nach dem Neustart der _Firewall-VM_ solltest du nun das _Dashboard_ sehen könne
 
 ![](images/vmware_1c7wi487IW.png)
 
-![](images/vmware_YCRRI7VzMU.png)
-
-![](images/vmware_YZIK4kTwK2.png)
-
-![](images/vmware_fL3DxEqbfO.png)
+Öffne oben im Navigationsmenü den Bereich _Services_ --> _DHCP Server_.
 
 ![](images/vmware_j6yI0knhgm.png)
 
+Sofern noch nicht vorhanden, ergänze im Feld _DNS Servers_ die IP-Adresse deiner Firewall.
+
+![](images/vmware_YCRRI7VzMU.png)
+
+Du kannst nun auch noch einmal die anderen Einstellungen überprüfen.
+
+
+### DNS Suchliste ###
+Beachte auch die _Domain search list_. Was ist das? Ganz einfach: 
+
+Der DHCP-Server teilt den Clients sowohl eine Domain mit, als auch eben jene Domain-Suchliste. Die Clients werden mit ihrem Hostname unter der Hauptdomain verfügbar gemacht. In unserem Beispiel wäre das also zum Beispiel _ClientPC2_, der nach Erhalt einer IP-Adresse unter:
+
+>_ClientPC2.clients.mylan_
+
+erreichbar wird. Versuchst du zum Beispiel, einen Client anzupingen oder eine andere Anfrage an diesen zu senden, wird das Betriebssystem zunächst versuchen, diesen über eine Domain in der Suchliste zu erreichen - und zwar in angegebener Reihenfolge.
+
+Das steigert zum einen die Performance, indem es Antwortzeiten und Suchanfragen minimiert und veraltete Netbios-Broadcasts vermeidet. Zum anderen lässt sich die Funktion nutzen, um zum Beispiel alle Gameserver unter einer Subdomain erreichbar zu machen, was für einige bestimmte Titel auch benötigt wird, während alle Rechner der Teilnehmer generell eine andere DNS-Domain haben.
+
+![](images/vmware_YZIK4kTwK2.png)
+
+
+
+### DNS Server ###
+
+Einen _vollständigen_ DNS-Server zu betreiben kann ein recht aufwendiges Unterfangen sein. Für unser Vorhaben beschränken wir uns auf den _DNS Forwarder_ der pfSense. Der Forwarder leitet alle _DNS-Anfragen_ an andere DNS-Server weiter, es sei denn, die gewünschte Adresse ist ihm bereits bekannt (Cache) oder es ist ein Eintrag in seiner lokalen Liste hinterlegt. Das genügt für unsere Anforderungen.
+
+Öffne das Konfgurationsmenü unter _Services_ --> _DNS Forwarder_.
+
 ![](images/vmware_Hx7mFqm3qz.png)
+
+Übernehme die Einstellungen wie angegeben.
 
 ![](images/vmware_N0C5SmLpD9.png)
 
+Solltest du beim Speichern der Einstellungen einen Fehler erhalten, deaktiviere zunächst den _DNS Resolver_ der pfSense. Dieser ist für unsere LAN-Umgebung weniger geeignet.
+
 ![](images/vmware_T84WZYZx3O.png)
 
+Wechsel hierfür nach _Services_ --> _DNS Resolver_. Nach dem du den Resolver deaktiviert und die Einstellung gespeichert hast, solltest du den _DNS Forwarder_ aktivieren können.
+
 ![](images/vmware_k22J4eHPbo.png)
+
+
+### Test der Dienste
+
+Du kannst nun noch einmal mit der Gameserver-VM überprüfen, ob _DHCP-Server_ und _DNS-Forwarder_ korrekt funktionieren.
+
+Du erinnerst dich vielleicht noch an _Start_ --> _cmd_ und:
+
+>control netconnections ncpa.cpl
+
 
 ![](images/vmware_zaDibs7VEf.png)
 
 ![](images/vmware_vH0UU7bgn5.png)
 
+
+Sollten die Parameter noch nicht so aussehen wie du sie in der pfSense konfiguriert hast, kannst du die VM neu starten oder mittels _Start_ --> _cmd_ und dem Befehl:
+
+>ipconfig /release
+
+den aktuellen _DHCP-Lease_ vergessen und mittels:
+
+>ipconfig /renew
+
+einen neuen Lease vom _DHCP-Server_ holen. Sollte es hier hapern, ein Neustart der VM kann helfen.
+
+Sehr schön! Wir sind schon weit gekommen.
+
+
+### Statische DHCP-Einträge
+
+Auf der Einstellungsseite des DHCP-Servers gibt es noch einen interessanten Bereich, nämlich _DHCP Static Mappings_. Statische Einträge erlauben es, einem bestimmten System immer die selbe IP-Adresse zuzuweisen, was für unsere Server-VMs sehr hilfreich ist.
+
+Die Zuweisung funktioniert anhand der MAC-Adresse (der VM). 
+
 ![](images/vmware_B2Gsme9FNO.png)
+
+Erstelle einen neuen Eintrag für die _Gameserver-VM_. Du kannst selbstverständlich auch einen anderen Namen oder eine andere Beschreibung angeben, wichtig ist nur dass du die korrekte MAC-Adresse deiner VM einträgst. Um diese zu erhalten kannst du mittels _Rechtsklick --> Properties_ die Hardwarekonfiguration der VM aufrufen.
 
 ![](images/vmware_bdelhaDKdm.png)
 
+Beachte dass du unter _Domain name_ eine abweichende Domain angeben kannst. Da es sich um einen Gameserver handelt, kannst du diesen zum Beispiel standardmäßig unter
+
+>servers.mylan
+
+anstatt
+
+>clients.mylan
+
+erreichbar machen.
+
+
 ![](images/vmware_eYDFUyrX80.png)
+
+Prüfe, ob der statische DHCP-Eintrag funktioniert, indem du erneut
+
+>control netconnections ncpa.cpl
+
+aufrufst oder das aktuelle _DHCP-Lease_ verwirfst, wie im vorherigen Abschnitt beschrieben. Auf dem Screenshot ist zu erkennen, dass der fest definierte DNS-Suffix vom DHCP-Server übernommen wurde.
+
 
 ![](images/vmware_k0CyRPxl0B.png)
 
-![](images/vmware_0HQBmQ9uTk.png)
+Wenn alles fertig konfiguriert ist, sollte die _pfSense_ neben ihrer IP-Adresse zusätzlich auch über
 
-![](images/vmware_9r3RLLJY8B.png)
+> https://firewall.mylan
+
+erreichbar sein.
+
+![](images/vmware_3pG30xxQGy.png)
+
+
+### Und wieder VMware Tools ###
+
+Auch die Firewall-VM benötigt die erweiterten Treiber der _VMware Tools_ um korrekt zu funktionieren.
+
+Um sie zu installieren, öffne das Menü _System_ --> _Package Manager_,
 
 ![](images/vmware_25fs4gRUar.png)
 
+suche nach VMware und installiere das Paket.
+
+![](images/vmware_fT612Be2MV.png)
+
+![](images/vmware_0HQBmQ9uTk.png)
+
+Starte die _Firewall-VM_ anschließend neu. Entweder über _Diagnostics_ --> _Reboot system_ oder über _VMware Workstation_.
+
+
+## Installation Webserver ##
+
+Du hast dich dafür entschieden und eine Webserver-VM angelegt? Dann machen wir damit mal weiter.
+
+![](images/vmware_9r3RLLJY8B.png)
+
+### Debian Setup ###
+
+Starte die VM und wähle im _Bootmenü_ als erstes _Install_. Die grafische Installation empfiehlt sich nur, wenn man auch wirklich GUI-Programme ausführen möchte.
+
 ![](images/vmware_wy0X1NpDvA.png)
+
+Folge den Anweisungen. Du kannst unsere Vorschläge natürlich anpassen (z.B. Tastatur-Layout und Sprache).
 
 ![](images/vmware_O2lQrzn1xj.png)
 
@@ -554,13 +679,32 @@ Nach dem Neustart der _Firewall-VM_ solltest du nun das _Dashboard_ sehen könne
 
 ![](images/vmware_p3ulkZ5mp6.png)
 
-![](images/vmware_3pG30xxQGy.png)
+### Hostname konfigurieren ###
+
+Wähle einen Hostname für deinen Webserver. Normalerweise entspricht dieser dem Namen unter welchem der Server später erreichbar sein soll. Das hindert uns natürlich nicht daran, den Webserver später via DNS unter weiteren Namen erreichbar zu machen. In unserem Beispiel wählen wir zunächst:
+
+> web
+
+als _Hostnamen_ und 
+
+> mylan
+
+als _Domain_, so dass sich _web.mylan_ in Kombination ergibt.
 
 ![](images/vmware_kkbWmciamM.png)
 
 ![](images/vmware_w0b0rIECiX.png)
 
+
+### Zugangsdaten ###
+
+Wähle ein _root_-Passwort. Das ist analog zum Windows-Setup das entsprechende Administrator-Konto.
+
 ![](images/vmware_mKOaPEhnsA.png)
+
+### Partitionierung ###
+
+Wenn du nicht weißt was du tust, folge genau den Anweisungen.
 
 ![](images/vmware_QjXH4q2s9S.png)
 
@@ -572,31 +716,57 @@ Nach dem Neustart der _Firewall-VM_ solltest du nun das _Dashboard_ sehen könne
 
 ![](images/vmware_Bab3eYv0oC.png)
 
-![](images/vmware_fT612Be2MV.png)
+### Auswahl Spiegelserver ###
+
+Bei den meisten Linux-Distributionen ist es üblich, einen _Spiegelserver_ (Mirror) für Installation, Updates und Upgrades auszuwählen, welcher geografisch der eigenen Hardware am nächsten ist.
 
 ![](images/vmware_HUuf28TKVv.png)
 
 ![](images/vmware_iz1KQmWnhT.png)
 
-![](images/vmware_NgYJhD5WCF.png)
+### Auswahl der Komponenten ###
 
-![](images/vmware_RrIKUzIcdh.png)
+Für unseren Webserver benötigen wir nur ein Minimalsystem. Wähle nur den _SSH server_ aus, wenn dir _SSH_ ein Begriff ist. Ansonsten kannst du auch diesen abwählen. Die _VMware Tools_ (Open VM Tools) werden automatisch installiert, da der _Debian-Installer_ erkennt, dass es sich um eine entsprechende VM handelt.
 
 ![](images/vmware_R8buyt7LMy.png)
 
+Der _Debian-Installer_ sollte nun seine Arbeit verrichten. Während die Installation läuft, öffne in _VMware Workstation_ die Hardwarekonfiguration der VM.
+
 ![](images/vmware_DzqRtDS9jy.png)
+
+Wir benötigen auch hier wieder die _MAC-Adresse_ der VM, um diese im _DHCP-Server_ einzurichten.
 
 ![](images/vmware_k6I1dmIbgx.png)
 
+### Statischer DHCP-Eintrag ###
+
+Öffne wieder die Oberfläche der _pfSense_ und wähle _Services_ --> _DHCP Server_ und gehe zu den _DHCP Static Mappings_. Füge einen neuen Eintrag hinzu und kopiere die _MAC-Adresse_ der _Webserver-VM_ in das Feld.
+ 
+Passe die IP-Adresse gegebenenfalls an. _Hostname_ und _IP-Adresse_ sollten den Angaben der VM entsprechen.
+ 
 ![](images/vmware_M5TtLUmhoq.png)
 
 ![](images/vmware_eHo7TK5RFL.png)
 
+Die fertige Konfiguration sollte in etwa so aussehen:
+
 ![](images/vmware_gUVrsGcAjj.png)
+
+### Finalisierung des Basissystems ###
+
+Sobald das _Debian-Setup_ abgeschlossen ist, solltest du den _Login screen_ sehen können.
 
 ![](images/vmware_tHEG51pO0q.png)
 
+Prüfe nun zunächst von der Windows-VM aus, ob die Webserver-VM bereits erreichbar ist. Dazu genügt ein einfacher PING-Befehl.
+
+>ping web.mylan
+
+Wenn DHCP- und DNS-Server korrekt funktionieren, wird die Antwort in etwa so aussehen:
+
 ![](images/vmware_8qpX4Xyc85.png)
+
+Sollte die Adresse korrekt aufgelöst werden, bedeutet das, dass DHCP_ und _DNS_ korrekt funktionieren.
 
 ![](images/vmware_2WZ5cUozGd.png)
 
