@@ -144,13 +144,13 @@ Wähle einen Speicherort für die virtuelle Festplatte. Normalerweise entspricht
 
 ![](images/vmware_7gLvfCVGdA.png)
 
-Wähle hierzu _Add_ und _Network Adapter_.
+Wähle hierzu **Add** und **Network Adapter**.
 
 ![](images/vmware_uSiRurnNSD.png)
 
 Die **VM** ist nun bereit für den ersten Start und die Installation der Firewall-Software. Bevor wir damit weiter machen, passen wir aber zunächst die **Netzwerkeinstellungen** der VMware Workstation (des Hypervisors) an. 
 
-Solltest du einen anderen Hypervisor wie **KVM**, **Hyper-V** oder **Virtualbox** verwenden, musst du die Adapterkonfiguration analog zu den folgenden Anweisungen dort nachbilden.
+Solltest du einen anderen Hypervisor wie KVM, Hyper-V oder Virtualbox verwenden, musst du die **Adapterkonfiguration** analog zu den folgenden Anweisungen dort nachbilden.
 
 > Selbstverständlich ist die Netzwerkkonfiguration auch abhängig vom gewünschten Setup. Dieses Tutorial behandelt ein gut funktionierendes Basissetup mit Internetzugang. Soll überhaupt kein Internet verteilt werden? Dann genügt für ein Basissetup auch ein Netzwerkadapter. Soll eine Lastverteilung oder ein Failover-Setup realisiert werden? Gibt es VLANs? Das weißt du sicher am besten. 
 
@@ -164,8 +164,8 @@ Solltest du einen anderen Hypervisor wie **KVM**, **Hyper-V** oder **Virtualbox*
 Wir gehen davon aus, dass eine Netzwerkkarte für **LAN** konfiguriert wird und eine für **WAN**, also den Internetzugang. Hier kann beispielsweise eine **Fritzbox**, ein **Kabelmodem** oder ein **LTE-Router** angeschlossen werden.
 
 
-> In VMware Workstation gibt es zwei grundlegende Netzwerkmodi: **NAT** (Network Address Translation) und **Bridge** (Netzwerk-Brücke). Hier eine kurze Erklärung, was die beiden Modi unterscheidet:
-> 
+In VMware Workstation gibt es zwei grundlegende Netzwerkmodi: **NAT** (Network Address Translation) und **Bridge** (Netzwerk-Brücke). Hier eine kurze Erklärung, was die beiden Modi unterscheidet:
+
 > ### NAT-Modus (Network Address Translation) ###
 > 
 > Hier erstellst du ein privates Netzwerk für die VMs.
