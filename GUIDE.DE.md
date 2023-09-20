@@ -752,7 +752,7 @@ Die fertige Konfiguration sollte in etwa so aussehen:
 
 ![](images/vmware_gUVrsGcAjj.png)
 
-### Finalisierung des Basissystems ###
+### Test DNS-Auflösung ###
 
 Sobald das _Debian-Setup_ abgeschlossen ist, solltest du den _Login screen_ sehen können.
 
@@ -766,45 +766,150 @@ Wenn DHCP- und DNS-Server korrekt funktionieren, wird die Antwort in etwa so aus
 
 ![](images/vmware_8qpX4Xyc85.png)
 
-Sollte die Adresse korrekt aufgelöst werden, bedeutet das, dass DHCP_ und _DNS_ korrekt funktionieren.
+Sollte die Adresse korrekt aufgelöst werden, bedeutet das, dass _DHCP_ und _DNS_ korrekt funktionieren.
+
+
+## Konfiguration Webserver ##
+
+In diesem Abschnitt geht es um die Konfiguration des Webservers beziehungsweise um die Einrichtung von _LANPage_. Du kannst natürlich auch eine andere Website oder App (z.B. Wordpress) verwenden.
+
+Melde dich zunächst an der _Webserver-VM_ mit deinen Zugangsdaten an und führe den Befehl zum Aktualisieren der Software-Liste aus:
+
+> apt update
+
+
+mittels 
+
+> apt upgrade -y
+
+kannst du die Updates anschließend automatisch installieren.
+
 
 ![](images/vmware_2WZ5cUozGd.png)
 
-![](images/vmware_YzqMNkLqqT.png)
+
+### Installation Abhängigkeiten ###
+
+Installiere nun die für _LANPage_ benötigten Pakete:
+
+> apt install -y apache2 php-common php-sqlite3 php-curl php-gd php-mbstring php-xml wget curl
 
 ![](images/vmware_f84U7b7YbB.png)
 
+Die Pakete werden automatisch ausgewählt und weitere vorgeschlagen:
+
 ![](images/vmware_7yYv4AO9fU.png)
+
+### Test Webserver ###
+
+Nachdem der Vorgang abgeschlossen ist, kehre zunächst zurück zur _Windows-VM_. Gib nun deine Hostname-Domain-Kombination ein und versuche die Testseite zu öffnen.
+
+Das Ergebnis sollte in etwa so aussehen:
 
 ![](images/vmware_lW4wjE1e3a.png)
 
-![](images/vmware_tXNYukJbD2.png)
+
+### LANPage Download ###
+
+Die eigentliche LANPage-Einrichtung gestaltet sich nun recht einfach. Es muss lediglich ein Script ausgeführt werden.
+
+> wget -O - https://www.eti-lan.xyz/lanpage.sh | sh
 
 ![](images/vmware_SpW3KohCW9.png)
 
 ![](images/vmware_8Q18KZAcoe.png)
 
+Starte die VM wie angewiesen neu. _LANpage_ sollte nun bereits funktionieren. Wechsel erneut zur _Windows-VM_ und aktualisiere die Seite.
+
+
 ![](images/vmware_T17F8ocVSv.png)
 
 ![](images/vmware_d5bjbwRexO.png)
 
+Um _LANPage_ nun an deine Veranstaltung anzupassen, kannst du die Beispielkonfiguration bearbeiten. Verwende dafür folgende Befehle:
+
+> cd /lan/eti_lanpage/
+cp config.sample.php config.php
+nano config.php
+
 ![](images/vmware_jMgn9pZmZp.png)
+
+Es öffnet sich ein Nano-Editor in dem du die gewünschten Änderungen vornehmen kannst.
 
 ![](images/vmware_4KzXrdqCXU.png)
 
+Bearbeite mit:
+
+> nano launcher.ini
+
+anschließend auch die Anpassungsdatei für den _LAN Launcher_.
+
 ![](images/vmware_8VAwFw36X2.png)
+
+
+### LANPage DNS-Eintrag ###
+
+Damit die Teilnehmer und installierte _LAN Launcher_ die Website und die Anpassungen finden können, braucht es noch einen speziellen _DNS-Eintrag_. Öffne hierzu noch einmal die _pfSense Verwaltungsoberfläche_ und gehe zu _Services --> DNS Forwarder --> Edit Host Override_.
+
+LAN Launcher versucht beim Start eine Datei _http://launcher.lan/launcher.ini_ zu erreichen. Erstelle deshalb einen neuen _Host Override_-Eintrag mit:
+
+**Host**
+> launcher
+
+und **Domain**
+> lan
+
+und passe die _IP-Adresse_ an die Adresse deiner _Webserver-VM_ an.
 
 ![](images/vmware_9Cn413TQ2t.png)
 
+Du kannst prüfen ob alles funktioniert, in dem du die _launcher.ini_ unter der angegebenen Adresse im Browser der _Gameserver-VM_ aufrufst.
+
+## Nacharbeiten ##
+
+Da war doch noch was. Achja, eine _Gameserver-VM_ ohne Games. Da _LAN Launcher_ die Windows-Server-Editionen leider nicht unterstützt, kannst du _LAN Launcher_ auf einem anderen _Windows PC_ starten und Gameserver-Daten auf die _VM_ kopieren.
+
+### Gameserver-Dateien ###
+
+Das funktioniert, in dem du einfach über die _Administrator-Standardfreigabe_ auf den _virtuellen Datenträger_ der _VM_ zugreifst.
+
+Öffne dazu einfach:
+
+> \\\gameserver-name\c$
+
+und melde dich mit den Zugangsdaten des _Administratorkontos_ an. Du kannst nun Ordner anlegen und Daten zwischen den Systemen hin und her kopieren.
+
 ![](images/vmware_LpdAVOYktw.png)
+
+### Separate Gameserver-VMs ###
+
+Manche Gameserver erfordern es, dass bestimmte _Ports_ auf dem darunterliegenden System frei sind und nicht benutzt werden. Es ist also möglich, dass sich unterschiedliche Spiele ins Gehege kommen, wenn sie auf dem selben _Windows Server_ ausgeführt werden. 
+
+Daher bestimmt die Möglichkeit, die bereits eingerichtete _Gameserver-VM_ zu klonen.
 
 ![](images/vmware_0pakStdmYB.png)
 
+In diesem Beispiel führt _Gameserver_2_ beispielsweise drei unterschiedliche Dienste aus, die für einen _Titanfall 2_-Server benötigt werden.
+
 ![](images/vmware_Kcb2IFkTUc.png)
+
+Auch ein DNS-Eintrag wird benötigt, da das Spiel unter dieser Adresse nach einer Serverliste sucht:
 
 ![](images/vmware_MdG5oDUVeR.png)
 
-![](images/vmware_grYmZ60b2w.png)
+Ohne DNS-Konfiguration lässt sich auch der _Titanfall 2_-Server nicht starten.
 
-![](images/vmware_FDcqZAquKG.png)
+
+## Ende ##
+
+Fertig! Das war's! Du hast nun hoffentlich alles am Laufen! 😃
+
+Wir sind vorerst am Ende unseres Tutorials angekommen. In Zukunft werden wir die Anleitung weiter verbessern und dabei das Feedback aus der Community berücksichtigen.
+
+Viel Spaß mit deinem neuen _LAN-Server_ und bis bald!
+
+
+Das ETI Team
+
+
 
