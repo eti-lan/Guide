@@ -15,10 +15,13 @@ In dieser Anleitung gehen wir davon aus, dass du ein System einrichten möchtest
 
 ### Vorschlag Netzdesign - mit Internet
 
+So könnte dein Netzwerk aussehen: Ein Router (z.B.: Fritzbox), ein paar Kabel, der Server, ein Switch und die Spiele-Rechner.
+
 ![](images/diagram_lan_inet.svg)
 
 
 Sollte **keine** Internetverbindung möglich oder diese schlicht nicht gewünscht sein, gestaltet sich das Netzdesign etwas einfacher. Es genügt **eine einzelne** Netzwerkkarte im Server. Sind mehr verfügbar, können sie als **Failover** oder **Link-Aggregation** genutzt werden.
+
 
 ### Vorschlag Netzdesign - nur LAN
 
@@ -103,7 +106,7 @@ Wenn du einen anderen Hypervisor verwenden möchtest (VMware ESXi, Hyper-V, Virt
 
 ## Vorbereitung der Firewall-VM
 
-Los geht's! In diesem Schritt erstellst du deinen ersten virtuellen Server: Eine **Firewall**. Die Firewall-VM kümmert sich um die Dienste DHCP sowie DNS und fungiert als Gateway für den Internetzugriff auf deiner LAN-Party (optional). Wir demonstrieren die Einrichtung anhand der Firewall-Distribution **PFsense**.
+Los geht's! In diesem Schritt erstellst du deinen ersten virtuellen Server: Eine **Firewall**. Die Firewall-VM kümmert sich um die Dienste DHCP sowie DNS und fungiert als Gateway für den Internetzugriff auf deiner LAN-Party (optional). Wir demonstrieren die Einrichtung anhand der Firewall-Distribution **pfSense**.
 
 ### Virtuellen Server erstellen ###
 
@@ -142,7 +145,7 @@ Belasse den Netzwerktyp zunächst bei der Standardeinstellung, in einem der näc
 
 ### Datenträgerkonfiguration der VM ###
 
-Die Voreinstellungen können unserer Ansicht nach beibehalten werden.
+Die Voreinstellungen können unserer Ansicht nach beibehalten werden. Der VMware **Paravirtualized SCSI**-Controller lieft zwar meist bessere Performance (gerade unter Windows; mit Registry-Anpassungen), jedoch ist die Kompatibilität bei Linux oder BSD-basierten Betriebssystemen nicht immer gegeben und es gibt schlicht keinen Treiber.
 
 ![](images/vmware_WKkPxnfWM3.png)
 
@@ -154,7 +157,7 @@ Erstelle eine **virtuelle Festplatte** entsprechend der Screenshots. Bei der Ang
 
 ![](images/vmware_TaVj5OregI.png)
 
-Wähle einen Speicherort für die virtuelle Festplatte. Normalerweise entspricht der Dateiname der Bezeichnung der VM und die **VMDK-Datei** wird im selben Verzeichnis abgelegt. Du solltest es hierbei belassen.
+Wähle einen Speicherort für die virtuelle Festplatte. Der Dateiname sollte dem Namen der VM entsprechen und die **VMDK-Datei** im selben Verzeichnis abgelegt werden. Du solltest es also beim Vorschlag belassen.
 
 ![](images/vmware_qkCFpidBEy.png)
 
@@ -170,11 +173,13 @@ Wähle hierzu **Add** und **Network Adapter**.
 
 ![](images/vmware_uSiRurnNSD.png)
 
+Die erwähnte, nicht benötigte Hardware wie **Soundkarte**, den Drucker, das Diskettenlaufwerk etc. kannst du durch **Markieren** und einen Klick auf **Remove** entfernen.
+
 Die **VM** ist nun bereit für den ersten Start und die Installation der Firewall-Software. Bevor wir damit weiter machen, passen wir aber zunächst die **Netzwerkeinstellungen** der VMware Workstation (des Hypervisors) an. 
 
 Solltest du einen anderen Hypervisor wie KVM, Hyper-V oder Virtualbox verwenden, musst du die **Adapterkonfiguration** analog zu den folgenden Anweisungen dort nachbilden.
 
-> Selbstverständlich ist die Netzwerkkonfiguration auch abhängig vom gewünschten Setup. Dieses Tutorial behandelt ein gut funktionierendes Basissetup mit Internetzugang. Soll überhaupt kein Internet verteilt werden? Dann genügt für ein Basissetup auch ein Netzwerkadapter. Soll eine Lastverteilung oder ein Failover-Setup realisiert werden? Gibt es VLANs? Das weißt du sicher am besten. 
+> Selbstverständlich ist die Netzwerkkonfiguration auch abhängig vom gewünschten Setup. Dieses Tutorial behandelt ein gut funktionierendes Basissetup mit Internetzugang. Soll kein Internet verteilt werden? Dann genügt für ein Basissetup auch ein einzelner Netzwerkadapter. Soll eine Lastverteilung oder ein Failover-Setup realisiert werden? Gibt es VLANs? Das weißt du sicher am besten. 
 
 
 ![](images/vmware_DHVKal9JPb.png)
@@ -183,7 +188,7 @@ Solltest du einen anderen Hypervisor wie KVM, Hyper-V oder Virtualbox verwenden,
 
 Öffne den **Virtual Network Editor** über das Menü **Edit**. Im Editor siehst du nun alle physischen und gegebenenfalls virtuelle Netzwerkkarten, die in deinem Server-Betriebssystem eingerichtet sind.
 
-Wir gehen davon aus, dass eine Netzwerkkarte für **LAN** konfiguriert wird und eine für **WAN**, also den Internetzugang. Hier kann beispielsweise eine **Fritzbox**, ein **Kabelmodem** oder ein **LTE-Router** angeschlossen werden.
+Wir gehen davon aus, dass entsprechend der Skizze eine Netzwerkkarte für **LAN** konfiguriert wird und eine für **WAN**, also den Internetzugang. Hier kann beispielsweise eine **Fritzbox**, ein **Kabelmodem** oder ein **LTE-Router** angeschlossen werden.
 
 
 In VMware Workstation gibt es zwei grundlegende Netzwerkmodi: **NAT** (Network Address Translation) und **Bridge** (Netzwerk-Brücke). Hier eine kurze Erklärung, was die beiden Modi unterscheidet:
@@ -275,16 +280,21 @@ Wenn der Kopiervorgang abgeschlossen ist, wähle **Reboot** um die VM neu zu sta
 
 Wenn der Neustart der VM abgeschlossen ist, solltest du das **pfSense Wartungsmenü** sehen können. Hier können und müssen wir zunächst eine grundlegende Konfiguration der Netzwerkkarten vornehmen.
 
-Bisher spielte es noch keine Rolle, an welche der beiden Netzwerkkarten in deinem Server, die Netzwerkkabel zum **LAN** oder **WAN** angeschlossen sind. Das wird sich nun ändern.
+Bisher spielte es noch keine Rolle, an welche der beiden Netzwerkkarten in deinem Server die Netzwerkkabel zum **LAN** oder **WAN** angeschlossen sind. Das wird sich nun ändern.
 
 ### LAN-Interface ###
 Wähle die Option **1**, um den virtuellen Netzwerkkarten IP-Adressen zuzuweisen.
 
 ![](images/vmware_E2PDsozprz.png)
 
-Fangen wir mit dem _LAN-Interface_ an. In unserer Übersicht ist das NIC **em1**. Demnach muss **2** ausgewählt werden, um **em1** zu konfigurieren. 
+Fangen wir mit dem **LAN-Interface** an. Auf dem Screenshot ist das Netzwerkkarte (Network Interface Controller, NIC) **em1**. Demnach muss **2** ausgewählt werden, um **em1** zu konfigurieren. 
 
 Bei der Frage ob die Netzwerkkarte mit DHCP konfiguriert werden soll, wählen wir **n**, denn stattdessen wollen wir unsere Firewall IP-Adressen verteilen lassen.
+
+>Es kann nun sein, dass die Netzwerkkarte **em1** mit einem Kabel verbunden ist, dass im Moment direkt zum **Router** geht, statt zum **Switch**. Das **LAN** dass die **pfSense** aufspannt, wäre dann von einem ebenfalls mit dem Switch verbundenen Rechner aus nicht zu erreichen. Das Kabel muss also am Server **umgesteckt** (getauscht) werden.
+
+>Dieses Problem lässt sich aber in der Regel frühzeitig erkennen, nämlich dann, wenn die **pfSense Wartungsoberfläche** wie hier zum ersten Mal angezeigt wird. Hat **pfSense** für **em0** oder **em1** schon ohne Zutun eine **IP-Adresse** erhalten? Dann stammt diese vermutlich aus dem Netz des angeschlossenen **Internet-Routers**. Damit wäre dieser **NIC** dann automatisch das **WAN**-Interface (was du natürlich durch Umstecken ändern kannst).
+ 
 
 ### IP-Bereich festlegen ###
 
@@ -301,30 +311,30 @@ Theoretisch funktionieren etliche private Adressbereiche:
 |Klasse C|192.168.0.0|192.168.255.255|
 
 
-In der Praxis hat sich jedoch gezeigt, dass manche Spiele mit IP-Bereichen aus _Klasse A_ oder _B_ nicht zurecht kommen oder diese im LAN-Modus gar blockieren. Wir empfehlen daher, einen IP-Bereich aus _Klasse C_ zu verwenden.
+In der Praxis hat sich jedoch gezeigt, dass manche Spiele mit IP-Bereichen aus **Klasse A** oder **B** nicht zurecht kommen oder diese im **LAN-Modus** gar blockieren. Wir empfehlen daher, einen IP-Bereich aus **Klasse C** zu verwenden.
 
-Der Bereich sollte außerdem _nicht_ identisch mit dem privaten Netzbereich deines Routers beziehungsweise Internetmodems sein.
+Der Bereich sollte außerdem **nicht** identisch mit dem privaten Netzbereich deines Routers beziehungsweise Internetmodems sein.
 
 
 ### Adresse der Firewall ###
-Wir verwenden in unserem Beispiel die IP **192.168.168.1** für die Firewall, woraus sich der IP-Bereich **192.168.168.0/24** ergibt.
+Wir verwenden in unserem Beispiel die IP **192.168.168.1** für die Firewall, woraus sich das IPv4-Netz **192.168.168.0/24** ergibt.
 
 ![](images/vmware_875Cjk78ue.png)
 
 ### IPv6 ###
 
-In deinem Netz wirst du **IPv6** vermutlich nicht benötigen. Du kannst **IPv6** konfigurieren, darauf gehen wir hier aber nicht weiter ein.
+In deinem Netz wirst du **IPv6** vermutlich nicht benötigen, denn den meisten (nicht zwangsweise älteren) Spielen ist das Netzwerkprotokoll herzlich egal. Du kannst **IPv6** konfigurieren, darauf gehen wir hier aber nicht weiter ein.
 
 ![](images/vmware_qg8FHhALjc.png)
 
 
 ### DHCP-Server aktivieren ###
 
-Bei der Nachfrage, ob wir den DHCP-Server im LAN einschalten wollen, bestätigen wir mit **y**, damit unsere Firewall IPs an die Clients verteilt.
+Bei der Nachfrage, ob wir den **DHCP-Server** im **LAN** einschalten wollen, bestätigen wir mit **y**, damit unsere Firewall IP-Adressen an Clients (oder Server) verteilt.
 
 ![](images/vmware_L1EzHmaxRU.png)
 
-Du kannst nun einen Bereich innerhalb des IP-Netzes angeben, aus dem Adressen an die Clients verteilt werden sollen.
+Du musst nun einen Bereich innerhalb des IP-Netzes angeben, aus dem die Adressen zur Verteilung gewählt werden sollen.
 
 ![](images/vmware_XSh9fY3wQX.png)
 
@@ -332,7 +342,7 @@ Du kannst nun einen Bereich innerhalb des IP-Netzes angeben, aus dem Adressen an
 
 ### WAN-Interface ###
 
-Die Netzwerkkarte **em0** konfigurieren wir zunächst nicht. Auf unserem Beispiel-Screenshot ist zu sehen, dass diese eine IP-Adresse **192.168.178.x** erhalten hat. Diese stammt von einer angeschlossenen Fritzbox, welche für den Internetzugang benutzt werden soll. Die Konfiguration von **em0** kann später im **Webinterface** der pfSense vorgenommen werden. Zunächst werden wir daher eine **Test-VM** einrichten, womit wir diese Konfigurationsoberfläche erreichen können. So kann außerdem geprüft werden ob der **DHCP-Server** und die anderen Einstellungen korrekt funktionieren.
+Die Netzwerkkarte **em0** konfigurieren wir zunächst nicht. Auf unserem Beispiel-Screenshot ist zu sehen, dass diese eine IP-Adresse **192.168.178.x** erhalten hat. Diese stammt von einer angeschlossenen Fritzbox, welche für den Internetzugang benutzt werden soll. Die Konfiguration von **em0** kann später im **Webinterface** der **pfSense** vorgenommen werden. Zunächst werden wir daher eine **Test-VM** einrichten, womit wir diese **Konfigurationsoberfläche** erreichen können. So kann außerdem geprüft werden ob der **DHCP-Server** und die anderen Einstellungen korrekt funktionieren.
 
 
 
@@ -342,7 +352,8 @@ Die Netzwerkkarte **em0** konfigurieren wir zunächst nicht. Auf unserem Beispie
 Die **Test-VM** kann nach der Konfiguration der Firewall als **Gameserver** fungieren. Daher werden wir sie in den folgenden Schritten auch so bezeichnen. Du kannst natürlich auch ein anderes Testsystem benutzen, wenn du keinen Gameserver betreiben möchtest. Das Vorgehen bleibt zu einem Großteil identisch.
 
 
-Erstelle nun eine neue VM und wähle das **Windows Server ISO-Image** für die Installation aus. Du kannst auch ein Windows 10 verwenden.
+Erstelle nun eine neue VM und wähle das **Windows Server ISO-Image** für die Installation aus. Du kannst auch ein **Windows 10** oder **11** als Betriebssystem für deinen Server verwenden. Hier müssen dann aber in jedem Fall die **Energiespareinstellungen** angepasst werden, damit die VM nicht _einschläft_.
+
 
 ![](images/vmware_xvy76r0qcy.png)
 
@@ -367,7 +378,7 @@ Prüfe die Konfiguration noch einmal in der Zusammenfassung.
 
 ![](images/vmware_UqK5upCZBV.png)
 
-Wähle anschließend auch bei dieser VM den **Bridged**-Modus für die Netzwerkkarte.
+Wähle anschließend auch bei dieser VM den **Bridged**-Modus für die Netzwerkkarte und entferne überflüssige Hardware.
 
 ![](images/vmware_dy4tly1Idr.png)
 
@@ -431,7 +442,7 @@ Es genügt eine Minimalkonfiguration mit einem oder zwei CPU-Kernen.
 
 ![](images/vmware_H5emm94klt.png)
 
-Überlege, ob der Webserver künftig weitere Aufgaben übernehmen soll. **20 GB** sind aber mehr als ausreichend.
+Überlege, ob der Webserver künftig weitere Aufgaben übernehmen soll. **20 GB** wären ansonsten aber mehr als ausreichend.
 
 ![](images/vmware_QOGmah6iwq.png)
 
@@ -450,19 +461,19 @@ Wähle ein Passwort, wenn du bei der Anmeldemaske angekommen bist.
 
 ![](images/vmware_AXOZkpRDXe.png)
 
-Beende den Server Manager, der sich daraufhin automatisch öffnet. Du kannst ihn auch gleich so konfigurieren, dass er nicht jedes Mal startet (Klick auf **Manage**).
+Beende den **Server Manager**, der sich daraufhin automatisch öffnet. Du kannst ihn auch gleich so konfigurieren, dass er nicht jedes Mal startet (Klick auf **Manage**).
 
 ![](images/vmware_FdKcxc5Mop.png)
 
-### VMware Tools installieren ###
-
-Dir wird sicherlich schon vor einer Weile der kleine Hinweis aufgefallen sein, den VMware Workstation am unteren Ende des VM-Fensters anzeigt. 
-
-Es wird empfohlen, die **VMware Tools** zu installieren, um das Gastsystem mit virtuellen Treibern zu beschleunigen. Klicke dazu auf _I finished Installing_.
-
 ![](images/vmware_PwoYr04i2o.png)
 
-Die _VMware Tools_ werden daraufhin von der Workstation heruntergeladen und automatisch installiert. Wenn nicht, kannst du diesen Schritt auch wiederholen.
+### VMware Tools installieren ###
+
+Dir wird sicherlich schon vor einer Weile der kleine Hinweis aufgefallen sein, den VMware Workstation am unteren Ende des VM-Fensters anzeigt.
+
+Es wird empfohlen, die **VMware Tools** zu installieren, um das Gastsystem mit virtuellen Treibern zu beschleunigen. Klicke dazu auf **I finished Installing**.
+
+Die **VMware Tools** werden daraufhin von der Workstation heruntergeladen und automatisch installiert. Wenn nicht, kannst du diesen Schritt auch wiederholen.
 
 ![](images/vmware_jVItTvTG6m.png)
 
@@ -491,7 +502,7 @@ Prüfe nun erneut die IP der **Gameserver-VM**. Hat sie eine Verbindung? Super! 
 
 Nun ist es Zeit, die Konfigurationsoberfläche der **pfSense Firewall** zu öffnen. Rufe dazu die IP-Adresse mittels **https://** auf, die du im Abschnitt **LAN-Interface** festgelegt hast. Also beispielsweise:
 
->https://192.168.168.1
+>**https://192.168.168.1**
 
 und bestätige die Zertifikatsfehlermeldung aufgrund der selbsterstellen **Certification Authority (CA)** der pfSense mit einem Klick auf **Continue to ... (unsafe)**.
 
@@ -525,11 +536,11 @@ Und anschließend bei **Schritt 5**...
 
 ![Bild](images/vmware_oJq1Fubp86.png)
 
-...die Konfiguration der Firewall-IP...
+...die Konfiguration der **Firewall-IP**...
 
 ![Bild](images/vmware_AKdfApvEXx.png)
 
-...sowie das von dir gewählte Passwort.
+...sowie das von dir gewählte **Passwort**.
 
 ![Bild](images/vmware_DAMv2ZsTrf.png)
 
@@ -647,7 +658,7 @@ aufrufst oder das aktuelle **DHCP-Lease** verwirfst, wie im vorherigen Abschnitt
 
 Wenn alles fertig konfiguriert ist, sollte die **pfSense** neben ihrer IP-Adresse zusätzlich auch über
 
-> https://firewall.mylan
+> **https://firewall.mylan**
 
 erreichbar sein.
 
@@ -661,7 +672,7 @@ Um sie zu installieren, öffne das Menü **System** --> **Package Manager**,
 
 ![Bild](images/vmware_25fs4gRUar.png)
 
-suche nach VMware und installiere das Paket.
+suche nach **VMware** und installiere das **Open-VM-Tools**-Paket.
 
 ![Bild](images/vmware_fT612Be2MV.png)
 
@@ -671,7 +682,7 @@ Starte die **Firewall-VM** anschließend neu. Entweder über **Diagnostics** -->
 
 ## Installation Webserver
 
-Du hast dich dafür entschieden und eine Webserver-VM angelegt? Dann machen wir damit mal weiter.
+Du hast dich dafür entschieden und eine **Webserver-VM** angelegt? Dann machen wir damit mal weiter.
 
 ![Bild](images/vmware_9r3RLLJY8B.png)
 
@@ -815,9 +826,9 @@ Das Ergebnis sollte in etwa so aussehen:
 
 ### LANPage Download
 
-Die eigentliche LANPage-Einrichtung gestaltet sich nun recht einfach. Es muss lediglich ein Script ausgeführt werden.
+Die eigentliche **LANPage**-Einrichtung gestaltet sich nun recht einfach. Es muss lediglich ein Script ausgeführt werden.
 
-> wget -O - https://www.eti-lan.xyz/lanpage.sh | sh
+> wget -O - **https://www.eti-lan.xyz/lanpage.sh** | sh
 
 ![Bild](images/vmware_SpW3KohCW9.png)
 
@@ -829,11 +840,12 @@ Starte die VM wie angewiesen neu. **LANpage** sollte nun bereits funktionieren. 
 
 ![Bild](images/vmware_d5bjbwRexO.png)
 
-Um **LANPage** nun an deine Veranstaltung anzupassen, kannst du die Beispielkonfiguration bearbeiten. Verwende dafür folgende Befehle:
+Um **LANPage** nun an deine Veranstaltung anzupassen, kannst du die **Beispielkonfiguration** bearbeiten. Verwende dafür folgende Befehle:
 
-> cd /lan/eti_lanpage/
-cp config.sample.php config.php
+> cd /lan/eti_lanpage/  
+cp config.sample.php config.php  
 nano config.php
+
 
 ![Bild](images/vmware_jMgn9pZmZp.png)
 
@@ -865,7 +877,10 @@ und passe die **IP-Adresse** an die Adresse deiner **Webserver-VM** an.
 
 ![Bild](images/vmware_9Cn413TQ2t.png)
 
-Du kannst prüfen ob alles funktioniert, in dem du die **launcher.ini** unter der angegebenen Adresse im Browser der **Gameserver-VM** aufrufst.
+Du kannst prüfen ob alles funktioniert, in dem du die **launcher.ini** unter der angegebenen Adresse im Browser der **Gameserver-VM** aufrufst:
+
+> **http://launcher.lan/launcher.ini**
+
 
 ## Nacharbeiten
 
@@ -877,7 +892,7 @@ Das funktioniert, in dem du einfach über die **Administrator-Standardfreigabe**
 
 Öffne dazu einfach:
 
-> \\\gameserver-name\c$
+> **\\\gameserver-name\c$**
 
 und melde dich mit den Zugangsdaten des **Administratorkontos** an. Du kannst nun Ordner anlegen und Daten zwischen den Systemen hin und her kopieren.
 
