@@ -400,7 +400,7 @@ Folge den Anweisungen und wähle eine passende Edition aus, die von deinen Lizen
 
 ### Partitionierung ###
 
-Wähle die gesamte virtuelle Festplatte zur automatisch Partitionierung.
+Wähle die gesamte virtuelle Festplatte zur automatischen Partitionierung.
 
 ![](images/vmware_Yh29oEAXDy.png)
 
